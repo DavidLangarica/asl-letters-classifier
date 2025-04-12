@@ -6,6 +6,24 @@ Este proyecto implementa un modelo de detección de gestos para la lengua de se�
 
 **Autor:** David René Langarica Hernández | A01708936
 
+## Introducción
+
+La comunicación con personas sordas o con discapacidad auditiva se ve facilitada por sistemas automáticos de reconocimiento de lengua de señas, que ayudan a cerrar la brecha existente entre comunidades oyentes y no oyentes. Según Fang et al. y Bala et al. , los avances en Deep Learning y, en particular, en las Redes Neuronales Convulacionales (CNN), han permitido mejoras notables en el reconocimiento de señas al automatizar la extracción de características espaciales (forma, posición de dedos, contornos, etc.).
+
+En este proyecto se entrena un modelo CNN para reconocer 7 letras de la ASL (A, B, C, D, E, F y G) utilizando un conjunto de imágenes balanceadas, aplicando técnicas de preprocesado, entrenamiento y evaluación respaldadas por la literatura.
+
+## 2. Estado del Arte
+
+En la literatura reciente se han propuesto varios enfoques para el reconocimiento de señas, destacando:
+
+- **Comparative Analysis of CNN Architectures:**  
+  Fang et al. comparan modelos como ResNet-50, LeNet y CNNs básicas para la detección de letras ASL, demostrando que las arquitecturas profundas pueden alcanzar precisiones mayores, aunque presenten fluctuaciones iniciales y requieran mayor potencia computacional.
+
+- **CNN para Reconocimiento de Alfabetos ASL:**  
+  Bala et al. entrenan una CNN con múltiples capas convolucionales y emplean técnicas de regularización (por ejemplo, Dropout y normalización), logrando una exactitud cercana al 99%. Destacan la importancia de un dataset balanceado y la normalización para estabilizar el entrenamiento.
+
+Tomando como base los dos trabajos anteriores, se optó por un modelo CNN de complejidad media que equilibre el desempeño y la velocidad de entrenamiento sobre las 7 clases abarcadas en el presente proyecto.
+
 ## Conjunto de Datos
 
 El conjunto de datos utilizado para entrenar este modelo es una fusión de tres datasets diferentes:
@@ -61,6 +79,10 @@ Puedes instalar todas las dependencias con:
 pip install tensorflow numpy matplotlib scikit-learn seaborn
 ```
 
+## Preprocesado de Datos
+
+Para el procesado de datos, primeramente, se utilizan técnicas de normalización dividiendo los valores de los píxeles por 255 (rescale=1./255) para transformar los valores en el rango [0, 1]. Por otro lado, en el entrenamiento se configura shuffle=True para obtener lotes representativos, mientras que en el conjunto de prueba se usa shuffle=False para alinear correctamente las etiquetas al evaluar la matriz de confusión.
+
 ## Uso del Modelo
 
 Para utilizar el modelo entrenado:
@@ -94,3 +116,9 @@ El modelo alcanza una precisión de aproximadamente 99.9% en el conjunto de prue
 ## Limitaciones
 
 Este modelo está entrenado únicamente para reconocer las primeras siete letras del alfabeto ASL (A-G). Para un sistema completo de reconocimiento, sería necesario extender el conjunto de datos para incluir todas las letras y posiblemente números y otros gestos comunes.
+
+## Referencias
+
+Fang, H. et al. (2024). “A Comparative Analysis of Convolutional Neural Networks for American Sign Language Recognition”. Proceedings of the 2nd International Conference on Machine Learning and Automation.
+
+Bala, D., Sarkar, B., Abdullah, M. I., & Hossain, M. A. (2021). “American Sign Language Alphabets Recognition using Convolutional Neural Network”. International Journal of Knowledge Based Computer Systems, 9(1), 33-40.
