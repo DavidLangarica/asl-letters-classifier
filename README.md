@@ -14,7 +14,7 @@ En este proyecto se entrena un modelo CNN para reconocer 7 letras de la ASL (A, 
 
 ## 2. Estado del Arte
 
-En la literatura reciente se han propuesto varios enfoques para el reconocimiento de señas, destacando:
+En la literatura reciente se han propuesto varios enfoques para el reconocimiento de señas, con base en la investigación, se destacan los siguientes:
 
 - **Comparative Analysis of CNN Architectures:**  
   Fang et al. comparan modelos como ResNet-50, LeNet y CNNs básicas para la detección de letras ASL, demostrando que las arquitecturas profundas pueden alcanzar precisiones mayores, aunque presenten fluctuaciones iniciales y requieran mayor potencia computacional.
@@ -32,7 +32,7 @@ El conjunto de datos utilizado para entrenar este modelo es una fusión de tres 
 - [ASL Alphabet](https://www.kaggle.com/datasets/grassknoted/asl-alphabet)
 - [American Sign Language Dataset](https://www.kaggle.com/datasets/ayuraj/asl-dataset)
 
-**Nota importante:** En este repositorio se incluye una muestra del conjunto de datos (`dataset_sample/`), pero no el conjunto completo debido a limitaciones de espacio. La muestra es suficiente para entender la estructura de los datos, pero para reproducir completamente los resultados se recomienda descargar los datasets originales.
+**Nota:** En este repositorio se incluye una muestra del conjunto de datos (`dataset_sample/`), pero no el conjunto completo debido a limitaciones de espacio. La muestra es suficiente para entender la estructura de los datos, pero para reproducir completamente los resultados se recomienda descargar los datasets originales.
 
 ### División de Datos
 
@@ -82,6 +82,27 @@ pip install tensorflow numpy matplotlib scikit-learn seaborn
 ## Preprocesado de Datos
 
 Para el procesado de datos, primeramente, se utilizan técnicas de normalización dividiendo los valores de los píxeles por 255 (rescale=1./255) para transformar los valores en el rango [0, 1]. Por otro lado, en el entrenamiento se configura shuffle=True para obtener lotes representativos, mientras que en el conjunto de prueba se usa shuffle=False para alinear correctamente las etiquetas al evaluar la matriz de confusión.
+
+## Modelo
+
+Se implementó un modelo secuencial en TensorFlow/Keras con la siguiente configuración:
+
+```
+model = Sequential([
+    Conv2D(32, (3,3), activation='relu', input_shape=(64, 64, 3)),
+    MaxPooling2D((2,2)),
+
+    Conv2D(64, (3,3), activation='relu'),
+    MaxPooling2D((2,2)),
+
+    Flatten(),
+    Dense(128, activation='relu'),
+    Dropout(0.5),
+    Dense(7, activation='softmax')
+])
+
+```
+
 
 ## Uso del Modelo
 
