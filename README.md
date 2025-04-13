@@ -87,7 +87,7 @@ Para el procesado de datos, primeramente, se utilizan técnicas de normalizació
 
 Se implementó un modelo secuencial en TensorFlow/Keras con la siguiente configuración:
 
-```
+```python
 model = Sequential([
     Conv2D(32, (3,3), activation='relu', input_shape=(64, 64, 3)),
     MaxPooling2D((2,2)),
@@ -102,7 +102,6 @@ model = Sequential([
 ])
 
 ```
-
 
 ## Uso del Modelo
 
@@ -133,6 +132,25 @@ print(f"La letra predicha es: {class_names[predicted_class]}")
 ## Rendimiento del Modelo
 
 El modelo alcanza una precisión de aproximadamente 99.9% en el conjunto de prueba, lo que indica un rendimiento excelente en la clasificación de las letras ASL incluidas en este proyecto.
+
+## Evaluación y Resultados
+
+Las gráficas de evolución de precisión (accuracy) y pérdida (loss) muestran lo siguiente:
+	•	La precisión tanto en el entrenamiento como en la validación se acerca a 100%.
+	•	Las pérdidas son muy bajas y estables.
+	•	No se observa una brecha significativa entre el desempeño en entrenamiento y validación, lo que indica que el modelo se generaliza adecuadamente.
+
+Posteriormente, al evaluar en el conjunto de prueba (~20% de los datos) y utilizando un generador sin shuffle, se obtuvo la siguiente matriz de confusión:
+
+
+En donde cada fila representa la clase real y cada columna la predicha. De igual forma, los valores en la diagonal son prácticamente iguales al total de ejemplos por clase, lo que indica una buena clasificación. Por otro lado, se observa un error mínimo en la clase G (una imagen clasificada incorrectamente como A).
+
+## Conclusión
+
+Se implementó una CNN inspirada en trabajos previos  para reconocer 7 letras de ASL. Los resultados alcanzados son los siguientes:
+	•	El modelo presenta una precisión notable en datos de prueba y una matriz de confusión con pocos errores.
+	•	La utilización de normalización y técnicas de Dropout contribuyeron a prevenir el sobreajuste y a estabilizar el proceso de entrenamiento.
+	•	La división adecuada del dataset (70% train, 10% validation, 20% test) garantizó la representación equitativa de cada clase (A-G).
 
 ## Limitaciones
 
