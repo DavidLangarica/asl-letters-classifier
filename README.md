@@ -90,13 +90,16 @@ Se implementó un modelo secuencial en TensorFlow/Keras con la siguiente configu
 ```python
 model = Sequential([
     Conv2D(32, (3,3), activation='relu', input_shape=(64, 64, 3)),
-    MaxPooling2D((2,2)),
-
-    Conv2D(64, (3,3), activation='relu'),
-    MaxPooling2D((2,2)),
-
+    MaxPooling2D(2, 2),
+    
+    Conv2D(128, (3,3), activation='relu', padding='same'),
+    MaxPooling2D(2, 2),
+    
+    Conv2D(256, (3,3), activation='relu', padding='same'),
+    MaxPooling2D(2, 2),
+    
     Flatten(),
-    Dense(128, activation='relu'),
+    Dense(256, activation='relu'),
     Dropout(0.5),
     Dense(7, activation='softmax')
 ])
