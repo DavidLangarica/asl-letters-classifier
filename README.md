@@ -135,6 +135,7 @@ El modelo alcanza una precisión de aproximadamente 99.9% en el conjunto de prue
 ## Evaluación y Resultados
 
 Las gráficas de evolución de precisión (accuracy) y pérdida (loss) muestran lo siguiente:
+
 ![Gráficas de precisión y pérdida](image.png)
 
     •	La precisión tanto en el entrenamiento como en la validación se acerca a 100%.
