@@ -1,14 +1,14 @@
 # Reconocimiento de Lengua de Señas Americana (ASL)
 
+**Autor:** David René Langarica Hernández | A01708936
+
 ## Descripción
 
 Este proyecto implementa un modelo de detección de gestos para la lengua de señas americana (ASL) utilizando redes neuronales convolucionales (CNN). El modelo es capaz de clasificar imágenes de gestos manuales representando las primeras siete letras del alfabeto ASL (A, B, C, D, E, F, G).
 
-**Autor:** David René Langarica Hernández | A01708936
-
 ## Introducción
 
-La comunicación con personas sordas o con discapacidad auditiva se ve facilitada por sistemas automáticos de reconocimiento de lengua de señas, que ayudan a cerrar la brecha existente entre comunidades oyentes y no oyentes. Según Fang et al. y Bala et al. , los avances en Deep Learning y, en particular, en las Redes Neuronales Convulacionales (CNN), han permitido mejoras notables en el reconocimiento de señas al automatizar la extracción de características espaciales (forma, posición de dedos, contornos, etc.).
+La comunicación con personas sordas o con discapacidad auditiva se ve facilitada por sistemas automáticos de reconocimiento de lengua de señas, que ayudan a cerrar la brecha existente entre comunidades oyentes y no oyentes. Según Fang (2024). y Bala et al. (2021) , los avances en Deep Learning y, en particular, en las Redes Neuronales Convulacionales (CNN), han permitido mejoras notables en el reconocimiento de señas al automatizar la extracción de características espaciales (forma, posición de dedos, contornos, etc.).
 
 En este proyecto se entrena un modelo CNN para reconocer 7 letras de la ASL (A, B, C, D, E, F y G) utilizando un conjunto de imágenes balanceadas, aplicando técnicas de preprocesado, entrenamiento y evaluación respaldadas por la literatura.
 
@@ -17,10 +17,10 @@ En este proyecto se entrena un modelo CNN para reconocer 7 letras de la ASL (A, 
 En la literatura reciente se han propuesto varios enfoques para el reconocimiento de señas, con base en la investigación, se destacan los siguientes:
 
 - **Comparative Analysis of CNN Architectures:**  
-  Fang et al. comparan modelos como ResNet-50, LeNet y CNNs básicas para la detección de letras ASL, demostrando que las arquitecturas profundas pueden alcanzar precisiones mayores, aunque presenten fluctuaciones iniciales y requieran mayor potencia computacional.
+  Fang (2024) compara modelos como ResNet-50, LeNet y CNNs básicas para la detección de letras ASL, demostrando que las arquitecturas profundas pueden alcanzar precisiones mayores, aunque presenten fluctuaciones iniciales y requieran mayor potencia computacional.
 
 - **CNN para Reconocimiento de Alfabetos ASL:**  
-  Bala et al. entrenan una CNN con múltiples capas convolucionales y emplean técnicas de regularización (por ejemplo, Dropout y normalización), logrando una exactitud cercana al 99%. Destacan la importancia de un dataset balanceado y la normalización para estabilizar el entrenamiento.
+  Bala et al. (2021) entrenan una CNN con múltiples capas convolucionales y emplean técnicas de regularización (por ejemplo, Dropout y normalización), logrando una exactitud cercana al 99%. Del mismo modo, destacan la importancia de un dataset balanceado y la normalización para estabilizar el entrenamiento.
 
 Tomando como base los dos trabajos anteriores, se optó por un modelo CNN de complejidad media que equilibre el desempeño y la velocidad de entrenamiento sobre las 7 clases abarcadas en el presente proyecto.
 
@@ -100,7 +100,6 @@ model = Sequential([
     Dropout(0.5),
     Dense(7, activation='softmax')
 ])
-
 ```
 
 ## Uso del Modelo
@@ -136,21 +135,23 @@ El modelo alcanza una precisión de aproximadamente 99.9% en el conjunto de prue
 ## Evaluación y Resultados
 
 Las gráficas de evolución de precisión (accuracy) y pérdida (loss) muestran lo siguiente:
-	•	La precisión tanto en el entrenamiento como en la validación se acerca a 100%.
-	•	Las pérdidas son muy bajas y estables.
-	•	No se observa una brecha significativa entre el desempeño en entrenamiento y validación, lo que indica que el modelo se generaliza adecuadamente.
+![Gráficas de precisión y pérdida](image.png)
+
+    •	La precisión tanto en el entrenamiento como en la validación se acerca a 100%.
+    •	Las pérdidas son muy bajas y estables.
+    •	No se observa una brecha significativa entre el desempeño en entrenamiento y validación, lo que indica que el modelo se generaliza adecuadamente.
 
 Posteriormente, al evaluar en el conjunto de prueba (~20% de los datos) y utilizando un generador sin shuffle, se obtuvo la siguiente matriz de confusión:
 
+![Matriz de confusión](image-1.png)
 
-En donde cada fila representa la clase real y cada columna la predicha. De igual forma, los valores en la diagonal son prácticamente iguales al total de ejemplos por clase, lo que indica una buena clasificación. Por otro lado, se observa un error mínimo en la clase G (una imagen clasificada incorrectamente como A).
+En donde cada fila representa la clase real y cada columna la predicha. De igual forma, los valores en la diagonal son prácticamente iguales al total de ejemplos por clase, lo que indica una buena clasificación. Por otro lado, se observan errores mínimos en las clases C, E y G (imágenes clasificadas incorrectamente).
 
 ## Conclusión
 
-Se implementó una CNN inspirada en trabajos previos  para reconocer 7 letras de ASL. Los resultados alcanzados son los siguientes:
-	•	El modelo presenta una precisión notable en datos de prueba y una matriz de confusión con pocos errores.
-	•	La utilización de normalización y técnicas de Dropout contribuyeron a prevenir el sobreajuste y a estabilizar el proceso de entrenamiento.
-	•	La división adecuada del dataset (70% train, 10% validation, 20% test) garantizó la representación equitativa de cada clase (A-G).
+Los resultados del modelo de clasificación de ASL muestran una precisión del 99.91% en el conjunto de prueba, con una matriz de confusión con pocos errores. En comparación, Fang (2024) reportó precisiones en el rango del 95–96% para modelos como ResNet-50, mientras que Bala et al. (2021) obtuvieron una precisión de 99.78% en la clasificación de alfabetos ASL completos. Esto indica que, para un problema reducido de 7 clases, la arquitectura CNN utiliazada, con preprocesado adecuado y regularización mediante Dropout al 50%, se comporta de forma estable y ofrece mejores resultados numéricos.
+
+Con la información anterior, se puede deducir que los modelos complejos para conjuntos con más clases pueden llegar a mostrar variaciones y precisiones ligeramente inferiores. Mientras que, el enfoque simplificado (de 7 clases), alcanza una exactitud casi perfecta en datos de prueba. Estos resultados demuestran la efectividad del preprocesado y la arquitectura elegida, y sugieren que al aumentar la complejidad del problema (por ejemplo, utilizando un alfabeto completo) se requerirán arquitecturas más profundas o el uso de modelos preentrenados para mantener un rendimiento alto.
 
 ## Limitaciones
 
@@ -158,6 +159,6 @@ Este modelo está entrenado únicamente para reconocer las primeras siete letras
 
 ## Referencias
 
-Fang, H. et al. (2024). “A Comparative Analysis of Convolutional Neural Networks for American Sign Language Recognition”. Proceedings of the 2nd International Conference on Machine Learning and Automation.
+Fang, H. (2024). A comparative analysis of convolutional neural networks for American sign language recognition. Applied and Computational Engineering, 97(1), 133–138. https://doi.org/10.54254/2755-2721/97/20241410
 
-Bala, D., Sarkar, B., Abdullah, M. I., & Hossain, M. A. (2021). “American Sign Language Alphabets Recognition using Convolutional Neural Network”. International Journal of Knowledge Based Computer Systems, 9(1), 33-40.
+Bala, D., Sarkar, B., Abdullah, M. I., & Hossain, M. A. (2021). American Sign Language Alphabets Recognition using Convolutional Neural Network. ResearchGate. https://www.researchgate.net/publication/352878275_American_Sign_Language_Alphabets_Recognition_using_Convolutional_Neural_Network
