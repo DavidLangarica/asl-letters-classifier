@@ -12,7 +12,7 @@ La comunicación con personas sordas o con discapacidad auditiva se ve facilitad
 
 En este proyecto se entrena un modelo CNN para reconocer 7 letras de la ASL (A, B, C, D, E, F y G) utilizando un conjunto de imágenes balanceadas, aplicando técnicas de preprocesado, entrenamiento y evaluación respaldadas por la literatura.
 
-## 2. Estado del Arte
+## Estado del Arte
 
 En la literatura reciente se han propuesto varios enfoques para el reconocimiento de señas, con base en la investigación, se destacan los siguientes:
 
@@ -81,11 +81,56 @@ pip install tensorflow numpy matplotlib scikit-learn seaborn
 
 ## Preprocesado de Datos
 
-Para el procesado de datos, primeramente, se utilizan técnicas de normalización dividiendo los valores de los píxeles por 255 (rescale=1./255) para transformar los valores en el rango [0, 1]. Por otro lado, en el entrenamiento se configura shuffle=True para obtener lotes representativos, mientras que en el conjunto de prueba se usa shuffle=False para alinear correctamente las etiquetas al evaluar la matriz de confusión.
+Para el procesado de datos, primeramente, se realizaron scripts para dividir localmente el conjunto de datos en entrenamiento, validación y prueba. Posteriormente, se utilizaron generadores de imágenes de Keras para cargar y preprocesar las imágenes. Estos generadores permiten aplicar técnicas de normalización dividiendo los valores de los píxeles por 255 (rescale=1./255) para transformar los valores en el rango [0, 1]. Por otro lado, en el entrenamiento se configura shuffle=True para obtener lotes representativos, mientras que en el conjunto de prueba se usa shuffle=False para alinear correctamente las etiquetas al evaluar la matriz de confusión.
 
-## Modelo
+## Primeros pasos
 
-Se implementó un modelo secuencial en TensorFlow/Keras con la siguiente configuración:
+### Primera Iteración del Modelo
+
+```python
+model = Sequential([
+    Conv2D(32, (3,3), activation='relu', input_shape=(200, 200, 3)),
+    MaxPooling2D(2, 2),
+
+    Conv2D(64, (3,3), activation='relu'),
+    MaxPooling2D(2, 2),
+
+    Flatten(),
+    Dense(128, activation='relu'),
+    Dense(7, activation='softmax')
+])
+```
+
+En la primera iteración del modelo, se implementó una arquitectura básica con dos capas convolucionales y una capa densa final. Se utilizó un tamaño de imagen de 200x200 píxeles, lo que resultó en un tiempo de entrenamiento considerablemente largo (más de 1 hora por época). Después de 5 épocas, se alcanzó una precisión del 82.45% en el conjunto de entrenamiento y del 79.35% en el conjunto de validación. Sin embargo, la precisión en el conjunto de prueba fue solo del 68.45%, lo que sugiere un problema de sobreajuste.
+
+Se decidió optar por esta arquitectura inicialmente, ya que se esperaba que el modelo pudiera aprender patrones básicos de las imágenes. Sin embargo, los resultados no fueron satisfactorios, lo que llevó a la necesidad de ajustar la arquitectura y los hiperparámetros.
+
+### Segunda Iteración del Modelo
+
+```python
+model = Sequential([
+    Conv2D(64, (3,3), activation='relu', padding='same', input_shape=(64, 64, 3)),
+    MaxPooling2D(2, 2),
+
+    Conv2D(128, (3,3), activation='relu', padding='same'),
+
+    Flatten(),
+    Dropout(0.5),
+    Dense(7, activation='softmax')
+])
+```
+
+En la segunda iteración del modelo, se implementó una arquitectura más robusta con dos capas convolucionales (aumentando a 64 y 128 filtros respectivamente) y se mantuvo una única capa densa final. Para combatir el sobreajuste, se incorporó un Dropout del 50% antes de la capa de salida. Del mismo modo, se decrementó el input_shape para poder iterar más rápido sobre el modelo.
+
+Tras 10 épocas de entrenamiento, se observaron resultados mixtos: una precisión de entrenamiento del 86.05% y una precisión de validación del 81.96%. Sin embargo, el modelo continuó mostrando problemas significativos de generalización, con una precisión en el conjunto de prueba de solo 67.85%.
+
+Esta diferencia entre los resultados de entrenamiento y prueba sugirió que, además de la arquitectura, podría existir un problema fundamental en el preprocesamiento de los datos, posiblemente relacionado con la normalización inadecuada de las imágenes o con la similitud excesiva entre muestras dentro de cada conjunto pero diferencias entre los conjuntos de entrenamiento y prueba.
+
+## Modelo final
+
+Para el modelo final, se realizó una revisión del preprocesamiento de datos, identificando que parte del sobreajuste observado anteriormente podría estar relacionado con una inadecuada normalización de las imágenes. Se implementó correctamente el escalado de píxeles (rescale=1./255) para asegurar que todos los valores estuvieran en el rango [0,1]. Adicionalmente, se enriqueció el conjunto de datos incorporando muestras de dos datasets adicionales, lo que mejoró significativamente la capacidad de generalización del modelo.
+
+La arquitectura final implementada fue:
 
 ```python
 model = Sequential([
@@ -102,9 +147,9 @@ model = Sequential([
 ])
 ```
 
-## Uso del Modelo
+## Uso del Modelo Final
 
-Para utilizar el modelo entrenado:
+Para utilizar el modelo final entrenado:
 
 ```python
 from tensorflow.keras.models import load_model
@@ -128,13 +173,14 @@ class_names = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
 print(f"La letra predicha es: {class_names[predicted_class]}")
 ```
 
-## Rendimiento del Modelo
+## Rendimiento del Modelo Final
 
 El modelo alcanza una precisión de aproximadamente 99.9% en el conjunto de prueba, lo que indica un rendimiento excelente en la clasificación de las letras ASL incluidas en este proyecto.
 
 ## Evaluación y Resultados
 
 Las gráficas de evolución de precisión (accuracy) y pérdida (loss) muestran lo siguiente:
+
 ![Gráficas de precisión y pérdida](image.png)
 
     •	La precisión tanto en el entrenamiento como en la validación se acerca a 100%.
