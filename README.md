@@ -136,13 +136,13 @@ La arquitectura final implementada fue:
 model = Sequential([
     Conv2D(32, (3,3), activation='relu', input_shape=(64, 64, 3)),
     MaxPooling2D(2, 2),
-    
+
     Conv2D(128, (3,3), activation='relu', padding='same'),
     MaxPooling2D(2, 2),
-    
+
     Conv2D(256, (3,3), activation='relu', padding='same'),
     MaxPooling2D(2, 2),
-    
+
     Flatten(),
     Dense(256, activation='relu'),
     Dropout(0.5),
@@ -168,7 +168,7 @@ def prepare_image(img_path):
     img_array = np.expand_dims(img_array, axis=0)
     return img_array
 
-image = prepare_image('ruta/a/tu/imagen.jpg')
+image = prepare_image('imagen.jpg')
 prediction = model.predict(image)
 predicted_class = np.argmax(prediction, axis=1)[0]
 
