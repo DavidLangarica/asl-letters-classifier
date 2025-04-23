@@ -14,15 +14,13 @@ En este proyecto se entrena un modelo CNN para reconocer 7 letras de la ASL (A, 
 
 ## Estado del Arte
 
-En la literatura reciente se han propuesto varios enfoques para el reconocimiento de señas, con base en la investigación, se destacan los siguientes:
+En los trabajos más recientes sobre reconocimiento de la lengua de señas, varias estrategias basadas en redes neuronales convolucionales han sido exploradas. Por un lado, Fang (2024) comparó algunas arquitecturas profundas como la ResNet-50 y la LeNet con CNN más sencillas. Si bien los primeros conllevan a precisión más alta, también presentan fluctuaciones progresivas durante las etapas iniciales de entrenamiento, así como una mayor demanda de cómputo en general.
 
-- **Comparative Analysis of CNN Architectures:**  
-  Fang (2024) compara modelos como ResNet-50, LeNet y CNNs básicas para la detección de letras ASL, demostrando que las arquitecturas profundas pueden alcanzar precisiones mayores, aunque presenten fluctuaciones iniciales y requieran mayor potencia computacional.
+Por otro lado, Bala et al., (2021), demostraron que una CNN con múltiples capas convolucionales, equipada de técnicas de regularización, como Dropout y normalización de activaciones, pueden estabilizar totalmente el proceso de entrenamiento, mientras rozan la marca del 99%. Es decir, siempre y cuando se trate de un conjunto de datos equilibrado.
 
-- **CNN para Reconocimiento de Alfabetos ASL:**  
-  Bala et al. (2021) entrenan una CNN con múltiples capas convolucionales y emplean técnicas de regularización (por ejemplo, Dropout y normalización), logrando una exactitud cercana al 99%. Del mismo modo, destacan la importancia de un dataset balanceado y la normalización para estabilizar el entrenamiento.
+Adhikari et al., 2024 llevaron este análisis un paso más allá al racionalizar y comparar cuatro modelos preentrenados, es decir, VGG16, InceptionV3, ResNet50 y DenseNet121. Además, se creó una CNN casi aleatoria de complejidad mediana. Por tanto, su investigación demuestra que un enfoque cuidadoso de elección y adaptación de ciertos filtros y bloques de pooling puede llevar a la precisión superior al 99.9% prescindiendo de los tiempos de entrenamiento de alto nivel de las profundidades más elevadas.
 
-Tomando como base los dos trabajos anteriores, se optó por un modelo CNN de complejidad media que equilibre el desempeño y la velocidad de entrenamiento sobre las 7 clases abarcadas en el presente proyecto.
+Tomando como base los hallazgos anteriores, se optó por diseñar un modelo CNN de complejidad media que equilibre el desempeño y la velocidad de entrenamiento sobre las 7 clases abarcadas en el presente.
 
 ## Conjunto de Datos
 
