@@ -81,7 +81,9 @@ pip install tensorflow numpy matplotlib scikit-learn seaborn
 
 ## Preprocesado de Datos
 
-Para el procesado de datos, primeramente, se realizaron scripts para dividir localmente el conjunto de datos en entrenamiento, validación y prueba. Posteriormente, se utilizaron generadores de imágenes de Keras para cargar y preprocesar las imágenes. Estos generadores permiten aplicar técnicas de normalización dividiendo los valores de los píxeles por 255 (rescale=1./255) para transformar los valores en el rango [0, 1]. Por otro lado, en el entrenamiento se configura shuffle=True para obtener lotes representativos, mientras que en el conjunto de prueba se usa shuffle=False para alinear correctamente las etiquetas al evaluar la matriz de confusión.
+Para el procesado de datos, primeramente, se realizaron scripts para dividir localmente el conjunto de datos en entrenamiento, validación y prueba. Posteriormente, se utilizaron generadores de imágenes de Keras para cargar y preprocesar las imágenes. Estos generadores permiten aplicar técnicas de normalización dividiendo los valores de los píxeles por 255 (rescale=1./255) para transformar los valores en el rango [0, 1]. Para el set de entrenamiento, se aplicaron técnicas de aumento de datos (data augmentation) como rotación, desplazamiento, corte, zoom y cambio de brillo, con el objetivo de ayudar en la generalización del modelo al exponerlo a variaciones en las imágenes.
+
+Por otro lado, en el entrenamiento se configura shuffle=True para obtener lotes representativos, mientras que en el conjunto de prueba se usa shuffle=False para alinear correctamente las etiquetas al evaluar la matriz de confusión.
 
 ## Primeros pasos
 
@@ -120,17 +122,11 @@ model = Sequential([
 ])
 ```
 
-En la segunda iteración del modelo, se implementó una arquitectura más robusta con dos capas convolucionales (aumentando a 64 y 128 filtros respectivamente) y se mantuvo una única capa densa final. Para combatir el sobreajuste, se incorporó un Dropout del 50% antes de la capa de salida. Del mismo modo, se decrementó el input_shape para poder iterar más rápido sobre el modelo.
-
-Tras 10 épocas de entrenamiento, se observaron resultados mixtos: una precisión de entrenamiento del 86.05% y una precisión de validación del 81.96%. Sin embargo, el modelo continuó mostrando problemas significativos de generalización, con una precisión en el conjunto de prueba de solo 67.85%.
+En la segunda iteración del modelo, se implementó una arquitectura más robusta con dos capas convolucionales (aumentando a 64 y 128 filtros respectivamente) y se mantuvo una única capa densa final. Para combatir el sobreajuste, se incorporó un Dropout del 50% antes de la capa de salida. Del mismo modo, se decrementó el input_shape para poder iterar más rápido sobre el modelo. Tras 10 épocas de entrenamiento, se observaron resultados mixtos: una precisión de entrenamiento del 86.05% y una precisión de validación del 81.96%. Sin embargo, el modelo continuó mostrando problemas significativos de generalización, con una precisión en el conjunto de prueba de solo 67.85%.
 
 Esta diferencia entre los resultados de entrenamiento y prueba sugirió que, además de la arquitectura, podría existir un problema fundamental en el preprocesamiento de los datos, posiblemente relacionado con la normalización inadecuada de las imágenes o con la similitud excesiva entre muestras dentro de cada conjunto pero diferencias entre los conjuntos de entrenamiento y prueba.
 
 ## Tercera Iteración del Modelo
-
-Posteriormente, se realizó una revisión del preprocesamiento de datos, identificando que parte del sobreajuste observado anteriormente podría estar relacionado con una inadecuada normalización de las imágenes. Se implementó correctamente el escalado de píxeles (rescale=1./255) para asegurar que todos los valores estuvieran en el rango [0,1]. Adicionalmente, se enriqueció el conjunto de datos incorporando muestras de dos datasets adicionales, lo que mejoró significativamente la capacidad de generalización del modelo.
-
-La arquitectura implementada fue:
 
 ```python
 model = Sequential([
@@ -150,37 +146,72 @@ model = Sequential([
 ])
 ```
 
+Posteriormente, se realizó una revisión del preprocesamiento de datos, identificando que parte del sobreajuste observado anteriormente podría estar relacionado con una inadecuada normalización de las imágenes. Se implementó correctamente el escalado de píxeles (rescale=1./255) para asegurar que todos los valores estuvieran en el rango [0,1]. Adicionalmente, se enriqueció el conjunto de datos incorporando muestras de dos datasets adicionales, lo que mejoró significativamente la capacidad de generalización del modelo. Con esto se logró controlar el sobreajuste, alcanzando una precisión de entrenamiento del 99.9% y una precisión de validación del 98.4%. Sin embargo, la precisión en el conjunto de prueba fue de solo 92%, lo que sugiere que aún existían problemas de generalización.
+
+## Modelo Final
+
+```python
+model = Sequential([
+    Conv2D(32, (3,3), activation='relu', padding='same', input_shape=(IMAGE_SIZE[0], IMAGE_SIZE[1], 3)),
+    Conv2D(32, (3,3), activation='relu', padding='same'),
+    MaxPooling2D(2, 2),
+    Dropout(0.2),
+
+    Conv2D(64, (3,3), activation='relu', padding='same'),
+    MaxPooling2D(2, 2),
+    BatchNormalization(),
+
+    Conv2D(128, (3,3), activation='relu', padding='same'),
+    Conv2D(128, (3,3), activation='relu', padding='same'),
+    MaxPooling2D(2, 2),
+
+    Flatten(),
+    Dense(128, activation='relu'),
+    BatchNormalization(),
+    Dropout(0.105),
+    Dense(7, activation='softmax')
+])
+```
+
+Para perfeccionar el modelo, se aplicó la literatura con el fin de establecer una arquitectura más sólida. Para ello, basé la profundidad de la red directamente en los hallazgos encontrados por Adhikari et al. (2024) quienes observaron que usar bloques repetidos de Conv2D, Conv2D y MaxPooling con un crecimiento progresivo de filtros (32, 64, 128, respectivamente) maximizaba la capacidad de extracción de características sin disparar excesivamente el cómputo, alcanzando 99.93% de precisión en ASL completo. Por lo cual, el modelo final se estructuró en 3 bloques de este tipo, usando la misma dinámica de aumento de complejidad, lo cuál demostró ser óptima.
+
+Para evitar el sobreajuste visto en arquitecturas previas, se basó en la regularización propuesta por Bala et al. (2021), quienes sugieren que un dropout entre 20% y 50% equivale a capturar la asa justa de abandono de características redundantes para evitar el sobreajuste sin deteriorar los contornos de las manos. Siguiendo esta propuesta, se implementó un dropout del 20% después de la primera capa convolucional y un 10.5% antes de la capa de salida.
+
+Adicionalmente, se incorporó una normalización por lotes (BatchNormalization) después de la segunda capa convolucional y antes de la capa densa, pues Adhikari et al. (2024) sugieren que la normalización entre capas acelera la convergencia y permite tasas de aprendizaje más altas sin perder estabilidad
+
 ## Rendimiento del Modelo Final
 
-El modelo alcanza una precisión de aproximadamente 99.9% en el conjunto de prueba, lo que indica un rendimiento excelente en la clasificación de las letras ASL incluidas en este proyecto.
-
-## Evaluación y Resultados
-
-Las gráficas de evolución de precisión (accuracy) y pérdida (loss) muestran lo siguiente:
-
-![Gráficas de precisión y pérdida](image.png)
-
-    •	La precisión tanto en el entrenamiento como en la validación se acerca a 100%.
-    •	Las pérdidas son muy bajas y estables.
-    •	No se observa una brecha significativa entre el desempeño en entrenamiento y validación, lo que indica que el modelo se generaliza adecuadamente.
-
-Posteriormente, al evaluar en el conjunto de prueba (~20% de los datos) y utilizando un generador sin shuffle, se obtuvo la siguiente matriz de confusión:
-
-![Matriz de confusión](image-1.png)
-
-En donde cada fila representa la clase real y cada columna la predicha. De igual forma, los valores en la diagonal son prácticamente iguales al total de ejemplos por clase, lo que indica una buena clasificación. Por otro lado, se observan errores mínimos en las clases C, E y G (imágenes clasificadas incorrectamente).
-
-## Conclusión
-
-Los resultados del modelo de clasificación de ASL del presente, muestran una precisión del 99.91% en el conjunto de prueba, con una matriz de confusión con pocos errores. En comparación, Fang (2024) reportó precisiones en el rango del 95–96% para modelos como ResNet-50, mientras que Bala et al. (2021) obtuvieron una precisión de 99.78% en la clasificación de alfabetos ASL completos. Esto indica que, para un problema reducido de 7 clases, la arquitectura CNN utiliazada, con preprocesado adecuado y regularización mediante Dropout al 50%, se comporta de forma estable y ofrece mejores resultados numéricos.
-
-Con la información anterior, se puede deducir que los modelos complejos para conjuntos con más clases pueden llegar a mostrar variaciones y precisiones ligeramente inferiores. Mientras que, el enfoque simplificado (de 7 clases), alcanza una exactitud casi perfecta en datos de prueba. Estos resultados demuestran la efectividad del preprocesado y la arquitectura elegida, y sugieren que al aumentar la complejidad del problema (por ejemplo, utilizando un alfabeto completo) se requerirán arquitecturas más profundas o el uso de modelos preentrenados para mantener un rendimiento alto.
+El modelo alcanza una precisión de aproximadamente 98.4% en el conjunto de prueba, lo que indica un buen rendimiento en la clasificación de las letras ASL incluidas en este proyecto.
 
 ## Limitaciones
 
 Este modelo está entrenado únicamente para reconocer las primeras siete letras del alfabeto ASL (A-G). Para un sistema completo de reconocimiento, sería necesario extender el conjunto de datos para incluir todas las letras y posiblemente números y otros gestos comunes.
 
+## Evaluación y Resultados
+
+Las gráficas de evolución de precisión (accuracy) y pérdida (loss) muestran lo siguiente:
+
+![Gráficas de precisión y pérdida](image.png)!
+
+Se entrenó la red durante diez épocas con un batch de 32 y el optimizador Adam. En la primera época, la precisión de entrenamiento partió en 70.4% con una pérdida de 0.84, mientras que en la validación ya alcanzaba el 96.7% con solo 0.11 de pérdida. A lo largo de las diez épocas, la precisión de entrenamiento escaló progresivamente hasta 98.8% y la pérdida descendió a 0.04. Simultáneamente, la validación mejoró hasta un 99.78% de acierto con una pérdida final de apenas 0.006. Evaluado sobre el conjunto de prueba de 12 691 imágenes, el modelo obtuvo una precisión del 99.71%.
+
+Posteriormente, al evaluar en el conjunto de prueba (~20% de los datos) y utilizando un generador sin shuffle, se obtuvo la siguiente matriz de confusión:
+
+![Matriz de confusión](image-1.png)
+
+La matriz de confusión confirma que prácticamente no existen errores de clasificación entre las siete letras ASL consideradas: cada clase supera el 99% tanto en precisión como en recall, con un F1‐score promedio de 1.00. Estas métricas, junto con la mínima brecha entre curvas de entrenamiento y validación, indican que la arquitectura inspirada en Adhikari et al. (2024) y Bala et al. (2021) generaliza de mejor manera sin incurrir en sobreajuste.
+
+## Conclusión
+
+Los resultados del modelo de clasificación de ASL del presente, muestran una precisión del 98.4% en el conjunto de prueba, con una matriz de confusión con pocos errores. En comparación, Fang (2024) reportó precisiones en el rango del 95–96% para modelos como ResNet-50, mientras que Bala et al. (2021) obtuvieron una precisión de 99.78% en la clasificación de alfabetos ASL completos. Esto indica que, para un problema reducido de 7 clases, la arquitectura CNN utiliazada, se comporta de forma estable y ofrece mejores resultados numéricos.
+
+Con la información anterior, se puede deducir que los modelos complejos para conjuntos con más clases pueden llegar a mostrar variaciones y precisiones ligeramente inferiores. Mientras que, el enfoque simplificado (de 7 clases), alcanza una exactitud casi perfecta en datos de prueba. Estos resultados demuestran la efectividad del preprocesado y la arquitectura elegida, y sugieren que al aumentar la complejidad del problema (por ejemplo, utilizando un alfabeto completo) se requerirán arquitecturas más profundas o el uso de modelos preentrenados para mantener un rendimiento alto.
+
+No obstante, es importante mencionar que, al momento de hacer las pruebas con imagenes del mundo real, se precisó que las manos con fondos complejos tienden a confundir al modelo, lo que sugiere que el modelo podría beneficiarse de un preprocesado adicional o de técnicas de aumento de datos para mejorar su robustez ante variaciones en el entorno. Esto fue avalado por Bala et al. (2021) quienes resaltan que la eliminación del fondo de las imágenes (manteniendo únicamente el contorno de las manos) mejora la robustez del modelo frente a variaciones de iluminación y fondos planos, por lo que el modelo presentado en este reporte predice de mejor manera cuando las manos son extraídas del fondo.
+
 ## Referencias
+
+Adhikari, S., Neupane, P., Mainali, S., Regmi, U., & Chapagain, P. (2024). American Sign Language Classification using CNNs: A Comparative Study. International Journal on Engineering Technology (InJET), 1(2), 283–295. https://doi.org/10.3126/injet.v1i2.66704
 
 Bala, D., Sarkar, B., Abdullah, M. I., & Hossain, M. A. (2021). American Sign Language Alphabets Recognition using Convolutional Neural Network. ResearchGate. https://www.researchgate.net/publication/352878275_American_Sign_Language_Alphabets_Recognition_using_Convolutional_Neural_Network
 
