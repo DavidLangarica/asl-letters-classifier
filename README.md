@@ -189,13 +189,13 @@ Este modelo está entrenado únicamente para reconocer las primeras siete letras
 
 Las gráficas de evolución de precisión (accuracy) y pérdida (loss) muestran lo siguiente:
 
-![Gráficas de precisión y pérdida](image.png)
+![Gráficas de precisión y pérdida](accuracy_loss.png)
 
 Se entrenó la red durante diez épocas con un batch de 32 y el optimizador Adam. En la primera época, la precisión de entrenamiento partió en 70.4% con una pérdida de 0.84, mientras que en la validación ya alcanzaba el 96.7% con solo 0.11 de pérdida. A lo largo de las diez épocas, la precisión de entrenamiento escaló progresivamente hasta 98.8% y la pérdida descendió a 0.04. Simultáneamente, la validación mejoró hasta un 99.78% de acierto con una pérdida final de apenas 0.006. Evaluado sobre el conjunto de prueba de 12 691 imágenes, el modelo obtuvo una precisión del 99.71%.
 
 Posteriormente, al evaluar en el conjunto de prueba (~20% de los datos) y utilizando un generador sin shuffle, se obtuvo la siguiente matriz de confusión:
 
-![Matriz de confusión](image-1.png)
+![Matriz de confusión](matrix.png)
 
 La matriz de confusión confirma que prácticamente no existen errores de clasificación entre las siete letras ASL consideradas: cada clase supera el 99% tanto en precisión como en recall, con un F1‐score promedio de 1.00. Estas métricas, junto con la mínima brecha entre curvas de entrenamiento y validación, indican que la arquitectura inspirada en Adhikari et al. (2024) y Bala et al. (2021) generaliza de mejor manera sin incurrir en sobreajuste.
 
