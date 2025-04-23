@@ -126,11 +126,11 @@ Tras 10 épocas de entrenamiento, se observaron resultados mixtos: una precisió
 
 Esta diferencia entre los resultados de entrenamiento y prueba sugirió que, además de la arquitectura, podría existir un problema fundamental en el preprocesamiento de los datos, posiblemente relacionado con la normalización inadecuada de las imágenes o con la similitud excesiva entre muestras dentro de cada conjunto pero diferencias entre los conjuntos de entrenamiento y prueba.
 
-## Modelo final
+## Tercera Iteración del Modelo
 
-Para el modelo final, se realizó una revisión del preprocesamiento de datos, identificando que parte del sobreajuste observado anteriormente podría estar relacionado con una inadecuada normalización de las imágenes. Se implementó correctamente el escalado de píxeles (rescale=1./255) para asegurar que todos los valores estuvieran en el rango [0,1]. Adicionalmente, se enriqueció el conjunto de datos incorporando muestras de dos datasets adicionales, lo que mejoró significativamente la capacidad de generalización del modelo.
+Posteriormente, se realizó una revisión del preprocesamiento de datos, identificando que parte del sobreajuste observado anteriormente podría estar relacionado con una inadecuada normalización de las imágenes. Se implementó correctamente el escalado de píxeles (rescale=1./255) para asegurar que todos los valores estuvieran en el rango [0,1]. Adicionalmente, se enriqueció el conjunto de datos incorporando muestras de dos datasets adicionales, lo que mejoró significativamente la capacidad de generalización del modelo.
 
-La arquitectura final implementada fue:
+La arquitectura implementada fue:
 
 ```python
 model = Sequential([
