@@ -150,32 +150,6 @@ model = Sequential([
 ])
 ```
 
-## Uso del Modelo Final
-
-Para utilizar el modelo final entrenado:
-
-```python
-from tensorflow.keras.models import load_model
-import numpy as np
-from tensorflow.keras.preprocessing.image import load_img, img_to_array
-
-model = load_model('asl_model.keras')
-
-def prepare_image(img_path):
-    img = load_img(img_path, target_size=(64, 64))
-    img_array = img_to_array(img)
-    img_array = img_array / 255.0
-    img_array = np.expand_dims(img_array, axis=0)
-    return img_array
-
-image = prepare_image('imagen.jpg')
-prediction = model.predict(image)
-predicted_class = np.argmax(prediction, axis=1)[0]
-
-class_names = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
-print(f"La letra predicha es: {class_names[predicted_class]}")
-```
-
 ## Rendimiento del Modelo Final
 
 El modelo alcanza una precisión de aproximadamente 99.9% en el conjunto de prueba, lo que indica un rendimiento excelente en la clasificación de las letras ASL incluidas en este proyecto.
