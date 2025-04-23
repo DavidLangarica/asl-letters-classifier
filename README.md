@@ -189,7 +189,7 @@ Este modelo está entrenado únicamente para reconocer las primeras siete letras
 
 Las gráficas de evolución de precisión (accuracy) y pérdida (loss) muestran lo siguiente:
 
-![Gráficas de precisión y pérdida](image.png)!
+![Gráficas de precisión y pérdida](image.png)
 
 Se entrenó la red durante diez épocas con un batch de 32 y el optimizador Adam. En la primera época, la precisión de entrenamiento partió en 70.4% con una pérdida de 0.84, mientras que en la validación ya alcanzaba el 96.7% con solo 0.11 de pérdida. A lo largo de las diez épocas, la precisión de entrenamiento escaló progresivamente hasta 98.8% y la pérdida descendió a 0.04. Simultáneamente, la validación mejoró hasta un 99.78% de acierto con una pérdida final de apenas 0.006. Evaluado sobre el conjunto de prueba de 12 691 imágenes, el modelo obtuvo una precisión del 99.71%.
 
