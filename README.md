@@ -124,7 +124,7 @@ En la segunda iteración del modelo, se implementó una arquitectura más robust
 
 Esta diferencia entre los resultados de entrenamiento y prueba sugirió que, además de la arquitectura, podría existir un problema fundamental en el preprocesamiento de los datos, posiblemente relacionado con la normalización inadecuada de las imágenes o con la similitud excesiva entre muestras dentro de cada conjunto pero diferencias entre los conjuntos de entrenamiento y prueba.
 
-## Tercera Iteración del Modelo
+### Tercera Iteración del Modelo
 
 ```python
 model = Sequential([
@@ -177,7 +177,7 @@ Para perfeccionar el modelo, se aplicó la literatura con el fin de establecer u
 
 Para evitar el sobreajuste visto en arquitecturas previas, se basó en la regularización propuesta por Bala et al. (2021), quienes sugieren que un dropout entre 20% y 50% equivale a capturar la asa justa de abandono de características redundantes para evitar el sobreajuste sin deteriorar los contornos de las manos. Siguiendo esta propuesta, se implementó un dropout del 20% después de la primera capa convolucional y un 10.5% antes de la capa de salida Adicionalmente, se incorporó una normalización por lotes (BatchNormalization) después de la segunda capa convolucional y antes de la capa densa, pues Adhikari et al. (2024) sugieren que la normalización entre capas acelera la convergencia y permite tasas de aprendizaje más altas sin perder estabilidad.
 
-# Modelo Final con Transfer Learning
+## Modelo Final con Transfer Learning
 
 Archivo: 'asl_model_transfer.keras'
 
