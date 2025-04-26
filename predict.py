@@ -5,7 +5,7 @@ import numpy as np
 from tensorflow.keras.models import load_model
 
 class_names = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
-model = load_model('asl_model1.keras')
+model = load_model('asl_model_transfer.keras')
 IMAGE_SIZE = (64, 64)
 
 def preprocess_image(image_path, remove_background=True):
@@ -36,5 +36,8 @@ def predict_image(image_path, remove_background=True):
     print(f'Predicted Class: {class_names[pred_class]}')
     print(f'Confidence: {confidence:.2f}%')
     
-image_path = 'e1.JPEG'
+    for i, class_name in enumerate(class_names):
+        print(f'Class {class_name}: {prediction[0][i] * 100:.2f}%')
+    
+image_path = 'f2.jpg'
 predict_image(image_path)

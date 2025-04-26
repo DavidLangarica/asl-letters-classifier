@@ -146,7 +146,9 @@ model = Sequential([
 
 Posteriormente, se realizó una revisión del preprocesamiento de datos, identificando que parte del sobreajuste observado anteriormente podría estar relacionado con una inadecuada normalización de las imágenes. Se implementó correctamente el escalado de píxeles (rescale=1./255) para asegurar que todos los valores estuvieran en el rango [0,1]. Adicionalmente, se enriqueció el conjunto de datos incorporando muestras de dos datasets adicionales, lo que mejoró significativamente la capacidad de generalización del modelo. Con esto se logró controlar el sobreajuste, alcanzando una precisión de entrenamiento del 99.9% y una precisión de validación del 98.4%. Sin embargo, la precisión en el conjunto de prueba fue de solo 92%, lo que sugiere que aún existían problemas de generalización.
 
-## Modelo Final
+## Modelo con Mejora de Parámetros y Aumento de Bloques
+
+Archivo: 'asl_model.keras'
 
 ```python
 model = Sequential([
@@ -171,39 +173,59 @@ model = Sequential([
 ])
 ```
 
-Para perfeccionar el modelo, se aplicó la literatura con el fin de establecer una arquitectura más sólida. Para ello, basé la profundidad de la red directamente en los hallazgos encontrados por Adhikari et al. (2024) quienes observaron que usar bloques repetidos de Conv2D, Conv2D y MaxPooling con un crecimiento progresivo de filtros (32, 64, 128, respectivamente) maximizaba la capacidad de extracción de características sin disparar excesivamente el cómputo, alcanzando 99.93% de precisión en ASL completo. Por lo cual, el modelo final se estructuró en 3 bloques de este tipo, usando la misma dinámica de aumento de complejidad, lo cuál demostró ser óptima.
+Para perfeccionar el modelo, se aplicó la literatura con el fin de establecer una arquitectura más sólida. Para ello, basé la profundidad de la red directamente en los hallazgos encontrados por Adhikari et al. (2024) quienes observaron que usar bloques repetidos de Conv2D, Conv2D y MaxPooling con un crecimiento progresivo de filtros (32, 64, 128, respectivamente) maximizaba la capacidad de extracción de características sin disparar excesivamente el cómputo, alcanzando 99.93% de precisión en ASL completo. Por lo cual, el modelo final se estructuró en 3 bloques de este tipo, usando la misma dinámica de aumento de complejidad, lo cuál demostró ser óptima. Asimismo, se utilizó con un learning rate de 0.0001, ya que ha demostrado convergencia rápida en tareas similares según Bala et al. (2021).
 
-Para evitar el sobreajuste visto en arquitecturas previas, se basó en la regularización propuesta por Bala et al. (2021), quienes sugieren que un dropout entre 20% y 50% equivale a capturar la asa justa de abandono de características redundantes para evitar el sobreajuste sin deteriorar los contornos de las manos. Siguiendo esta propuesta, se implementó un dropout del 20% después de la primera capa convolucional y un 10.5% antes de la capa de salida.
+Para evitar el sobreajuste visto en arquitecturas previas, se basó en la regularización propuesta por Bala et al. (2021), quienes sugieren que un dropout entre 20% y 50% equivale a capturar la asa justa de abandono de características redundantes para evitar el sobreajuste sin deteriorar los contornos de las manos. Siguiendo esta propuesta, se implementó un dropout del 20% después de la primera capa convolucional y un 10.5% antes de la capa de salida Adicionalmente, se incorporó una normalización por lotes (BatchNormalization) después de la segunda capa convolucional y antes de la capa densa, pues Adhikari et al. (2024) sugieren que la normalización entre capas acelera la convergencia y permite tasas de aprendizaje más altas sin perder estabilidad.
 
-Adicionalmente, se incorporó una normalización por lotes (BatchNormalization) después de la segunda capa convolucional y antes de la capa densa, pues Adhikari et al. (2024) sugieren que la normalización entre capas acelera la convergencia y permite tasas de aprendizaje más altas sin perder estabilidad
+# Modelo Final con Transfer Learning
+
+Archivo: 'asl_model_transfer.keras'
+
+```python
+base_model = MobileNetV2(weights='imagenet', include_top=False, input_shape=(IMAGE_SIZE[0], IMAGE_SIZE[1], 3))
+for layer in base_model.layers[:100]:
+    layer.trainable = False
+
+model = Sequential([
+    base_model,
+    GlobalAveragePooling2D(),
+    Dense(512, activation='relu'),
+    Dropout(0.5),
+    Dense(7, activation='softmax')
+])
+```
+
+Si bien, el modelo anterior tenía un mejor rendimiento, aún existia el problema de reconocimiento de imagenes del mundo real. Es por ello que, siguiendo las recomendaciones por Poladiya et al. (2024), para el modelo final se optó por utilizar MobileNetV2 como modelo base, cargando el dataset de ImageNet (que cuenta con más de 1 millón de imágenes) con el que se puede aprovechar el conocimiento previamente adquirido de la red para características como los bordes, texturas y formas. Así como se continuó utilizando un learning rate de 0.0001.
+
+En la arquitectura, se emplea GlobalAveragePooling2D para obtener una versión más condensada de las imágenes sin perder las características esenciales de las manos (Poladiya et al. 2024), una capa Dense de 512 neuronas con activación ReLU para que el modelo reconoza patrones no lineales, y un Dropout del 50% para prevenir el sobreajuste, continuando con la propuesta de Bala et al. (2021).
 
 ## Rendimiento del Modelo Final
 
-El modelo alcanza una precisión de aproximadamente 98.4% en el conjunto de prueba, lo que indica un buen rendimiento en la clasificación de las letras ASL incluidas en este proyecto.
+El modelo final con transfer learning logró una precisión del 98.8% en el conjunto de prueba, superando a modelos más complejos como ResNet-50 que, según Fang (2024), alcanzaban precisiones en el rango de 95-96%. Esta estrategia demuestra que, como concluyen Adhikari et al. (2024), un enfoque cuidadoso de adaptación de arquitecturas pre-entrenadas puede lograr precisiones cercanas al 99.9%, prescindiendo de los tiempos de entrenamiento prolongados que requieren los modelos más profundos entrenados desde cero.
 
 ## Limitaciones
 
-Este modelo está entrenado únicamente para reconocer las primeras siete letras del alfabeto ASL (A-G). Para un sistema completo de reconocimiento, sería necesario extender el conjunto de datos para incluir todas las letras y posiblemente números y otros gestos comunes.
+Este modelo está entrenado únicamente para reconocer las primeras siete letras del alfabeto ASL (A-G). Para un sistema completo de reconocimiento, sería necesario extender el conjunto de datos para incluir todas las letras y posiblemente números y otros gestos comunes. Del mismo modo, se recomienda aumentar el dataset de entrenamiento con imágenes de diferentes condiciones de iluminación y fondos para mejorar la robustez del modelo.
 
 ## Evaluación y Resultados
 
 Las gráficas de evolución de precisión (accuracy) y pérdida (loss) muestran lo siguiente:
 
-![Gráficas de precisión y pérdida](accuracy_loss.png)
+![Gráficas de precisión y pérdida](acc_loss.png)
 
-Se entrenó la red durante diez épocas con un batch de 32 y el optimizador Adam. En la primera época, la precisión de entrenamiento partió en 70.4% con una pérdida de 0.84, mientras que en la validación ya alcanzaba el 96.7% con solo 0.11 de pérdida. A lo largo de las diez épocas, la precisión de entrenamiento escaló progresivamente hasta 98.8% y la pérdida descendió a 0.04. Simultáneamente, la validación mejoró hasta un 99.78% de acierto con una pérdida final de apenas 0.006. Evaluado sobre el conjunto de prueba de 12 691 imágenes, el modelo obtuvo una precisión del 99.71%.
+Se entrenó la red durante diez épocas con un batch de 32 y el optimizador Adam. En la primera época, la precisión de entrenamiento partió en 70.4% con una pérdida de 0.83, mientras que en la validación ya alcanzaba el 96.66% con solo 0.11 de pérdida. A lo largo de las diez épocas, la precisión de entrenamiento escaló progresivamente hasta 98.8% y la pérdida descendió a 0.038. Simultáneamente, la validación mejoró hasta un 99.78% de acierto con una pérdida final de apenas 0.006. Evaluado sobre el conjunto de prueba de 12 691 imágenes, el modelo obtuvo una precisión del 99.70%.
 
 Posteriormente, al evaluar en el conjunto de prueba (~20% de los datos) y utilizando un generador sin shuffle, se obtuvo la siguiente matriz de confusión:
 
-![Matriz de confusión](matrix.png)
+![Matriz de confusión](conf_matrix.png)
 
-La matriz de confusión confirma que prácticamente no existen errores de clasificación entre las siete letras ASL consideradas: cada clase supera el 99% tanto en precisión como en recall, con un F1‐score promedio de 1.00. Estas métricas, junto con la mínima brecha entre curvas de entrenamiento y validación, indican que la arquitectura inspirada en Adhikari et al. (2024) y Bala et al. (2021) generaliza de mejor manera sin incurrir en sobreajuste.
+La matriz de confusión confirmó que prácticamente no existen errores de clasificación entre las siete letras ASL consideradas: cada clase supera el 99% tanto en precisión como en recall, con un F1‐score promedio de 1.00. Estas métricas, junto con la mínima brecha entre curvas de entrenamiento y validación, indican que la arquitectura de transfer learning inspirada en Poladiya et al. 2024 generaliza de mejor manera sin incurrir en sobreajuste y puede reconocer mejor las señas en diferentes entornos.
 
 ## Conclusión
 
-Los resultados del modelo de clasificación de ASL del presente, muestran una precisión del 98.4% en el conjunto de prueba, con una matriz de confusión con pocos errores. En comparación, Fang (2024) reportó precisiones en el rango del 95–96% para modelos como ResNet-50, mientras que Bala et al. (2021) obtuvieron una precisión de 99.78% en la clasificación de alfabetos ASL completos. Esto indica que, para un problema reducido de 7 clases, la arquitectura CNN utiliazada, se comporta de forma estable y ofrece mejores resultados numéricos.
+Los resultados del modelo de clasificación de ASL del presente, muestran una precisión del 98.4% en el conjunto de prueba, con una matriz de confusión con pocos errores. En comparación, Fang (2024) reportó precisiones en el rango del 95–96% para modelos como ResNet-50, mientras que Bala et al. (2021) obtuvieron una precisión de 99.78% en la clasificación de alfabetos ASL completos. Esto indica que, para un problema reducido de 7 clases, la arquitectura con transfer learning, se comporta de forma estable y ofrece mejores resultados numéricos.
 
-Con la información anterior, se puede deducir que los modelos complejos para conjuntos con más clases pueden llegar a mostrar variaciones y precisiones ligeramente inferiores. Mientras que, el enfoque simplificado (de 7 clases), alcanza una exactitud casi perfecta en datos de prueba. Estos resultados demuestran la efectividad del preprocesado y la arquitectura elegida, y sugieren que al aumentar la complejidad del problema (por ejemplo, utilizando un alfabeto completo) se requerirán arquitecturas más profundas o el uso de modelos preentrenados para mantener un rendimiento alto.
+Con la información anterior, se puede deducir que los modelos complejos para conjuntos con más clases pueden llegar a mostrar variaciones y precisiones ligeramente inferiores. Mientras que, el enfoque simplificado (de 7 clases), alcanza una exactitud casi perfecta en datos de prueba. Estos resultados demuestran la efectividad del preprocesado y la arquitectura elegida, y sugieren que al aumentar la complejidad del problema (por ejemplo, utilizando un alfabeto completo) se requerirán arquitecturas más profundas.
 
 No obstante, es importante mencionar que, al momento de hacer las pruebas con imagenes del mundo real, se precisó que las manos con fondos complejos tienden a confundir al modelo, lo que sugiere que el modelo podría beneficiarse de un preprocesado adicional o de técnicas de aumento de datos para mejorar su robustez ante variaciones en el entorno. Esto fue avalado por Bala et al. (2021) quienes resaltan que la eliminación del fondo de las imágenes (manteniendo únicamente el contorno de las manos) mejora la robustez del modelo frente a variaciones de iluminación y fondos planos, por lo que el modelo presentado en este reporte predice de mejor manera cuando las manos son extraídas del fondo.
 
@@ -214,3 +236,5 @@ Adhikari, S., Neupane, P., Mainali, S., Regmi, U., & Chapagain, P. (2024). Ameri
 Bala, D., Sarkar, B., Abdullah, M. I., & Hossain, M. A. (2021). American Sign Language Alphabets Recognition using Convolutional Neural Network. ResearchGate. https://www.researchgate.net/publication/352878275_American_Sign_Language_Alphabets_Recognition_using_Convolutional_Neural_Network
 
 Fang, H. (2024). A comparative analysis of convolutional neural networks for American sign language recognition. Applied and Computational Engineering, 97(1), 133–138. https://doi.org/10.54254/2755-2721/97/20241410
+
+Poladiya, Parth & Suresh, Devika & Gulhane, Pooja & Ajmal, Mohammed & Kosamkar, Pranali. (2024). Sign Language Detection Using Deep Learning. 1-6. https://doi.org/10.1109/INOCON60754.2024.10512307
