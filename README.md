@@ -211,21 +211,23 @@ Este modelo está entrenado únicamente para reconocer las primeras siete letras
 
 Las gráficas de evolución de precisión (accuracy) y pérdida (loss) muestran lo siguiente:
 
-![Gráficas de precisión y pérdida](acc_loss.png)
+![Gráficas de precisión y pérdida](acc_n_loss.png)
 
-Se entrenó la red durante diez épocas con un batch de 32 y el optimizador Adam. En la primera época, la precisión de entrenamiento partió en 70.4% con una pérdida de 0.83, mientras que en la validación ya alcanzaba el 96.66% con solo 0.11 de pérdida. A lo largo de las diez épocas, la precisión de entrenamiento escaló progresivamente hasta 98.8% y la pérdida descendió a 0.038. Simultáneamente, la validación mejoró hasta un 99.78% de acierto con una pérdida final de apenas 0.006. Evaluado sobre el conjunto de prueba de 12 691 imágenes, el modelo obtuvo una precisión del 99.70%.
+Se entrenó la red durante diez épocas con un batch de 32 y el optimizador Adam (con el default learning rate de 0.001). En la primera época, la precisión de entrenamiento partió en 85.16% con una pérdida de 0.48, mientras que en la validación ya alcanzaba el 88.10% con 1.14 de pérdida. A lo largo de las 18 épocas, la precisión de entrenamiento escaló progresivamente hasta 99.38% y la pérdida descendió a 0.022. Simultáneamente, la validación mejoró hasta un 99.75% de acierto con una pérdida final de apenas 0.0069. Evaluado sobre el conjunto de prueba de 12 691 imágenes, el modelo obtuvo una precisión del 99.81%.
+
+ES notable que las gráficas de precisión y pérdida muestran un comportamiento volátil en la validación durante las primeras épocas, lo que sugiere que el modelo estaba aprendiendo rápidamente. Sin embargo, a partir de la sexta época, la precisión de validación se estabilizó y la pérdida comenzó a descender de manera más uniforme, lo que indica que el modelo estaba convergiendo hacia una solución óptima.
 
 Posteriormente, al evaluar en el conjunto de prueba (~20% de los datos) y utilizando un generador sin shuffle, se obtuvo la siguiente matriz de confusión:
 
-![Matriz de confusión](conf_matrix.png)
+![Matriz de confusión](c_matrix.png)
 
-La matriz de confusión confirmó que prácticamente no existen errores de clasificación entre las siete letras ASL consideradas: cada clase supera el 99% tanto en precisión como en recall, con un F1‐score promedio de 1.00. Estas métricas, junto con la mínima brecha entre curvas de entrenamiento y validación, indican que la arquitectura de transfer learning inspirada en Poladiya et al. 2024 generaliza de mejor manera sin incurrir en sobreajuste y puede reconocer mejor las señas en diferentes entornos.
+La matriz de confusión confirmó que prácticamente no existen errores de clasificación entre las siete letras ASL consideradas: cada clase supera el 99% tanto en precisión como en recall, con un F1‐score de 1.00 en las 7 clases. Estas métricas, junto con la mínima brecha entre curvas de entrenamiento y validación, indican que la arquitectura de transfer learning inspirada en Poladiya et al. 2024 generaliza de mejor manera sin incurrir en sobreajuste y puede reconocer mejor las señas en diferentes entornos.
 
 ## Conclusión
 
-Los resultados del modelo de clasificación de ASL del presente, muestran una precisión del 98.4% en el conjunto de prueba, con una matriz de confusión con pocos errores. En comparación, Fang (2024) reportó precisiones en el rango del 95–96% para modelos como ResNet-50, mientras que Bala et al. (2021) obtuvieron una precisión de 99.78% en la clasificación de alfabetos ASL completos. Esto indica que, para un problema reducido de 7 clases, la arquitectura con transfer learning, se comporta de forma estable y ofrece mejores resultados numéricos.
+Los resultados del modelo de clasificación de ASL del presente, muestran una precisión del 99.38% en el conjunto de prueba, con una matriz de confusión con pocos errores. En comparación, Fang (2024) reportó precisiones en el rango del 95–96% para modelos como ResNet-50, mientras que Bala et al. (2021) obtuvieron una precisión de 99.78% en la clasificación de alfabetos ASL completos. Esto indica que, para un problema reducido de 7 clases, la arquitectura con transfer learning, se comporta de forma estable y ofrece buenos resultados numéricos.
 
-Con la información anterior, se puede deducir que los modelos complejos para conjuntos con más clases pueden llegar a mostrar variaciones y precisiones ligeramente inferiores. Mientras que, el enfoque simplificado (de 7 clases), alcanza una exactitud casi perfecta en datos de prueba. Estos resultados demuestran la efectividad del preprocesado y la arquitectura elegida, y sugieren que al aumentar la complejidad del problema (por ejemplo, utilizando un alfabeto completo) se requerirán arquitecturas más profundas.
+Con la información anterior, se puede deducir que los modelos complejos para conjuntos con más clases pueden llegar a mostrar variaciones y precisiones ligeramente inferiores. Mientras que, el enfoque simplificado (de 7 clases), alcanza una exactitud casi perfecta en datos de prueba. Estos resultados demuestran la efectividad del preprocesado y la arquitectura elegida, y son un buen de partida para un dataset más grande y completo.
 
 No obstante, es importante mencionar que, al momento de hacer las pruebas con imagenes del mundo real, se precisó que las manos con fondos complejos tienden a confundir al modelo, lo que sugiere que el modelo podría beneficiarse de un preprocesado adicional o de técnicas de aumento de datos para mejorar su robustez ante variaciones en el entorno. Esto fue avalado por Bala et al. (2021) quienes resaltan que la eliminación del fondo de las imágenes (manteniendo únicamente el contorno de las manos) mejora la robustez del modelo frente a variaciones de iluminación y fondos planos, por lo que el modelo presentado en este reporte predice de mejor manera cuando las manos son extraídas del fondo.
 

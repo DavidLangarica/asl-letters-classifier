@@ -39,5 +39,11 @@ def predict_image(image_path, remove_background=True):
     for i, class_name in enumerate(class_names):
         print(f'Class {class_name}: {prediction[0][i] * 100:.2f}%')
     
-image_path = 'f2.jpg'
-predict_image(image_path)
+# Uso -------------------------------
+# En image_path se debe colocar la ruta de la imagen que se desea predecir
+# La función predict_image se puede llamar con remove_background=True o False
+#    dependiendo de si se desea eliminar el fondo o no.
+#    El modelo predice mejor si el fondo es removido
+# -----------------------------------
+image_path = 'e.JPEG'
+predict_image(image_path, True)
